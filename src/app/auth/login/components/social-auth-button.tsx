@@ -2,11 +2,11 @@
 
 import BetterAuthActionButton from "@/components/auth/better-auth-action-button";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import {
   SUPPORTED_OAUTH_PROVIDERS,
   SUPPORTED_OAUTH_PROVIDERS_DETAILS,
-} from "@/lib/o-auth-providers";
+} from "@/lib/auth/o-auth-providers";
 
 export default function SocialAuthButton() {
   return SUPPORTED_OAUTH_PROVIDERS.map((provider) => {

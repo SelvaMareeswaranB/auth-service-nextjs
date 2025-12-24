@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { LoadingSwap } from "@/components/ui/loading-swap";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -25,10 +25,14 @@ const signInSchema = z.object({
 
 type signUpForm = z.infer<typeof signInSchema>;
 
-export default function SignInTab() {
+export default function SignInTab({
+  openEmailVerification,
+}: {
+  openEmailVerification: (email: string) => void;
+}) {
   const form = useForm<signUpForm>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {email: "", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const isSubmitting = form.formState.isSubmitting;
@@ -38,18 +42,21 @@ export default function SignInTab() {
       { ...data, callbackURL: "/" },
       {
         onError: (error) => {
-          toast.error(error.error.message || "Sign In failed");
+          if (error.error.code === "EMAIL_NOT_VERIFIED") {
+            openEmailVerification(data.email);
+          } else {
+            toast.error(error.error.message || "Sign In failed");
+          }
         },
         onSuccess: () => {
-          router.push("/")
-        }
-      },
+          router.push("/");
+        },
+      }
     );
   };
   return (
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(handleSignUp)}>
-       
         <FormField
           control={form.control}
           name="email"

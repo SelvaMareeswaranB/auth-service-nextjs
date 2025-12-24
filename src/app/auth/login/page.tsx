@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import {
   Card,
   CardContent,
@@ -12,16 +12,18 @@ import SignUpTab from "./components/sign-up-tab";
 import { Separator } from "@/components/ui/separator";
 import SocialAuthButton from "./components/social-auth-button";
 import { useEffect, useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
+import EmailVerification from "./components/email-verification";
 
+type Tab = "signin" | "signup" | "email-verification";
 export default function LoginPage() {
-
-  const router = useRouter()
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-
+  const [email, setEmail] = useState("selva@iaaxin.com");
+  const [selectedTab, setSelectedTab] = useState<Tab>("signin");
   useEffect(() => {
-    authClient.getSession().then(session => {
+    authClient.getSession().then((session) => {
       if (session.data != null) {
         router.push("/");
       } else {
@@ -30,13 +32,23 @@ export default function LoginPage() {
     });
   }, [router]);
 
-  if (loading) return null; // or a spinner
+  const openEmailVerification = (enmail: string) => {
+    setSelectedTab("email-verification");
+    setEmail(email);
+  };
+  if (loading) return null;
   return (
-    <Tabs defaultValue="signin" className="w-full max-auto my-6 px-4">
-      <TabsList>
-        <TabsTrigger value="signin">Sign In</TabsTrigger>
-        <TabsTrigger value="signup">Sign Up</TabsTrigger>
-      </TabsList>
+    <Tabs
+      value={selectedTab}
+      className="w-full max-auto my-6 px-4"
+      onValueChange={(t) => setSelectedTab(t as Tab)}
+    >
+      {(selectedTab === "signin" || selectedTab === "signup") && (
+        <TabsList>
+          <TabsTrigger value="signin">Sign In</TabsTrigger>
+          <TabsTrigger value="signup">Sign Up</TabsTrigger>{" "}
+        </TabsList>
+      )}
 
       <TabsContent value="signup">
         <Card>
@@ -44,12 +56,12 @@ export default function LoginPage() {
             <CardTitle>Sign Up</CardTitle>
           </CardHeader>
           <CardContent>
-            <SignUpTab />
+            <SignUpTab openEmailVerification={openEmailVerification} />
           </CardContent>
 
           <Separator />
           <CardFooter className="grid grid-cols-2 gap-3">
-            <SocialAuthButton />
+            <SocialAuthButton  />
           </CardFooter>
         </Card>
       </TabsContent>
@@ -60,13 +72,24 @@ export default function LoginPage() {
             <CardTitle>Sign In</CardTitle>
           </CardHeader>
           <CardContent>
-            <SignInTab />
+            <SignInTab   openEmailVerification={openEmailVerification} />
           </CardContent>
 
           <Separator />
           <CardFooter className="grid grid-cols-2 gap-3">
             <SocialAuthButton />
           </CardFooter>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="email-verification">
+        <Card>
+          <CardHeader className="text-2xl font-bold">
+            <CardTitle>Verify Your Email</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EmailVerification email={email} />
+          </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
