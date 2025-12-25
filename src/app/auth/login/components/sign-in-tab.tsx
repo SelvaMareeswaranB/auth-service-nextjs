@@ -27,8 +27,10 @@ type signUpForm = z.infer<typeof signInSchema>;
 
 export default function SignInTab({
   openEmailVerification,
+  openForgotPassword
 }: {
   openEmailVerification: (email: string) => void;
+  openForgotPassword:()=>void
 }) {
   const form = useForm<signUpForm>({
     resolver: zodResolver(signInSchema),
@@ -76,7 +78,18 @@ export default function SignInTab({
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel>Password</FormLabel>
+                <Button
+                onClick={openForgotPassword}
+                  type="button"
+                  variant={"link"}
+                  size={"sm"}
+                  className="text-sm font-normal underline"
+                >
+                  Forgot Password
+                </Button>
+              </div>
               <FormControl>
                 <PasswordInput {...field} />
               </FormControl>
