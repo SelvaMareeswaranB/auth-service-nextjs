@@ -40,7 +40,7 @@ export default function LoginPage() {
   if (loading) return null;
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
-      <Tabs value={selectedTab} onValueChange={(t) => setSelectedTab(t as Tab)}>
+      <Tabs value={selectedTab} onValueChange={(t) => setSelectedTab(t as Tab)} className="w-full max-w-md">
         {(selectedTab === "signin" || selectedTab === "signup") && (
           <TabsList className="grid grid-cols-2 mb-4">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -49,7 +49,7 @@ export default function LoginPage() {
         )}
 
         {/* SIGN UP */}
-        <TabsContent value="signup">
+        <TabsContent value="signup" >
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">

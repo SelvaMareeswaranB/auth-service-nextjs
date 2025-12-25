@@ -4,20 +4,22 @@ import { db } from "@/drizzle/db";
 import { nextCookies } from "better-auth/next-js";
 import { sendPasswordResetEmail } from "../email/password-reset-email";
 import { sendMailVerificationEmail } from "../email/mail-verification-email";
+import { createAuthMiddleware } from "better-auth/api";
+import { sendWelcomeEmail } from "../email/welcome-email";
 
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendPasswordResetEmail({user, url});
+      await sendPasswordResetEmail({ user, url });
     },
   },
   emailVerification: {
     autoSignInAfterVerification: true,
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendMailVerificationEmail({user,url})
+      await sendMailVerificationEmail({ user, url });
     },
   },
 
@@ -41,4 +43,17 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
   }),
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith("/sign-up")) {
+        const user = ctx.context.newSession?.user ?? {
+          name: ctx.body.name,
+          email: ctx.body.email,
+        };
+        if (user !== null) {
+          await sendWelcomeEmail(user);
+        }
+      }
+    }),
+  },
 });
