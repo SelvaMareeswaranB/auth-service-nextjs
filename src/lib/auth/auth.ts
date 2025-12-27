@@ -68,7 +68,7 @@ export const auth = betterAuth({
   },
   plugins: [nextCookies()],
   database: drizzleAdapter(db, {
-    provider: "pg", // or "mysql", "sqlite"
+    provider: "pg",
   }),
   hooks: {
     after: createAuthMiddleware(async (ctx) => {

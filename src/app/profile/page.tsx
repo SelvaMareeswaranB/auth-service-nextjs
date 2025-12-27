@@ -1,15 +1,31 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/lib/auth/auth";
 import { Tabs, TabsContent } from "@radix-ui/react-tabs";
-import { ArrowLeft, Key, LinkIcon, Shield, Trash2, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Key,
+  LinkIcon,
+  Loader2Icon,
+  Shield,
+  Trash2,
+  User,
+} from "lucide-react";
 import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import React from "react";
-import ProfileUpdateForm from "./components/ProfileUpdateForm";
+import React, { Suspense } from "react";
+import ProfileUpdateForm from "./components/profile-update-form";
+import SetPasswordButton from "./components/set-password-button";
+import ChangePasswordForm from "./components/change-password-form";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -17,11 +33,11 @@ export default async function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto my-6 px-4">
       <div className="mb-8">
-       <Link href="/" className="inline-flex items-center mb-6">
+        <Link href="/" className="inline-flex items-center mb-6">
           <ArrowLeft className="size-4 mr-2" />
           Back to Home
         </Link>
-         <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4">
           <div className="size-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
             {session.user.image ? (
               <Image
@@ -46,7 +62,7 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
-    <Tabs className="space-y-2" defaultValue="profile">
+      <Tabs className="space-y-2" defaultValue="profile">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">
             <User />
@@ -69,15 +85,69 @@ export default async function ProfilePage() {
             <span className="max-sm:hidden">Danger</span>
           </TabsTrigger>
         </TabsList>
-  
-
         <TabsContent value={"profile"}>
-            <Card>
-                <CardContent>
-                     <ProfileUpdateForm user={session.user} />
-                </CardContent>
-            </Card>
-        </TabsContent>      </Tabs>
-      </div>
+          <Card>
+            <CardContent>
+              <ProfileUpdateForm user={session.user} />
+            </CardContent>
+          </Card>
+        </TabsContent>{" "}
+        <TabsContent value={"security"}>
+          <Card>
+            <CardContent>
+              <LoadingSuspense>
+                <SecurityTab email={session.user.email} />
+              </LoadingSuspense>
+            </CardContent>
+          </Card>
+        </TabsContent>{" "}
+      </Tabs>
+    </div>
+  );
+}
+
+async function SecurityTab({ email }: { email: string }) {
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
+  const hasPasswordAccount = accounts.some(
+    (a) => a.providerId === "credential"
+  );
+  return (
+    <div className="space-y-6">
+      {hasPasswordAccount ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Change Password</CardTitle>
+          </CardHeader>
+          <CardDescription>
+            Update your password for improved security
+          </CardDescription>
+          <CardContent>
+            <ChangePasswordForm email={email} />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Set Password</CardTitle>
+          </CardHeader>
+          <CardDescription>
+            We will send you a password reset email to set up a password.
+          </CardDescription>
+          <CardContent>
+            <SetPasswordButton email={email} />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function LoadingSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<Loader2Icon className="size-20 animate-spin" />}>
+      {children}
+    </Suspense>
   );
 }
