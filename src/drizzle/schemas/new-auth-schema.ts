@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -13,12 +12,6 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-nickName: text("nick_name")
-  .notNull()
-  .unique()
-  .default(
-    sql`'newbie-' || LPAD(FLOOR(RANDOM() * 100000)::text, 5, '0')`
-  )
 });
 
 export const session = pgTable(

@@ -8,6 +8,23 @@ import { createAuthMiddleware } from "better-auth/api";
 import { sendWelcomeEmail } from "../email/welcome-email";
 
 export const auth = betterAuth({
+  user: {
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ user, url, newEmail }) => {
+        await sendMailVerificationEmail({
+          user: { ...user, email: newEmail },
+          url,
+        });
+      },
+    },
+    additionalFields: {
+      nickName: {
+        type: "string",
+        required: true,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -27,10 +44,20 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => {
+        return {
+          nickName: profile.name,
+        };
+      },
     },
     discord: {
       clientId: process.env.DISCORD_CLIENT_ID!,
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => {
+        return {
+          nickName: profile.username,
+        };
+      },
     },
   },
   session: {

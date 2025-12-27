@@ -11,60 +11,77 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { LoadingSwap } from "@/components/ui/loading-swap";
 import { authClient } from "@/lib/auth/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-const signUpSchema = z.object({
+const profileUpdateSchema = z.object({
   name: z.string().min(1, "Name is required"),
   nickName: z.string().min(1, "nick name required"),
   email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-type signUpForm = z.infer<typeof signUpSchema>;
+type profileUpdateForm = z.infer<typeof profileUpdateSchema>;
 
-export default function SignUpTab({
-  openEmailVerification,
+export default function ProfileUpdateForm({
+  user,
 }: {
-  openEmailVerification: (email: string) => void;
+  user: {
+    email: string;
+
+    name: string;
+
+    nickName: string;
+  };
 }) {
-  const form = useForm<signUpForm>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", nickName: "" },
+  const form = useForm<profileUpdateForm>({
+    resolver: zodResolver(profileUpdateSchema),
+    defaultValues: user,
   });
 
   const isSubmitting = form.formState.isSubmitting;
   const router = useRouter();
 
-  const handleSignUp = async (data: signUpForm) => {
-    const res = await authClient.signUp.email(
-      { ...data, callbackURL: "/" },
-      {
-        onError: (error) => {
-          toast.error(error.error.message || "Sign up failed");
-        },
-      }
-    );
+  const handleUpdateProfile = async (data: profileUpdateForm) => {
+    const promises = [
+      authClient.updateUser({ name: data.name, nickName: data.nickName }),
+    ];
 
-    if (res.error) return;
-
-    const user = res.data?.user;
-
-    if (!user || user.emailVerified !== true) {
-      openEmailVerification(data.email);
-      return;
+    if (data.email !== user.email) {
+      promises.push(
+        authClient.changeEmail({
+          newEmail: data.email,
+          callbackURL: "/profile",
+        })
+      );
     }
 
-    router.push("/");
+    const result = await Promise.all(promises);
+    const updateUserResult = result[0];
+    const changeEmailResult = result[1] ?? { error: false };
+
+    if (updateUserResult.error) {
+      toast.error(updateUserResult.error.message || "Failed To Update Profile");
+    } else if (changeEmailResult.error) {
+      toast.error(changeEmailResult.error.message || "Failed to update email");
+    } else {
+      if (data.email !== user.email) {
+        toast.success("Verify your email to complete the email change");
+      } else {
+        toast.success("Profiel Update Successfully");
+      }
+    }
+    router.refresh();
   };
 
   return (
     <Form {...form}>
-      <form className="space-y-4" onSubmit={form.handleSubmit(handleSignUp)}>
+      <form
+        className="space-y-4"
+        onSubmit={form.handleSubmit(handleUpdateProfile)}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -79,7 +96,7 @@ export default function SignUpTab({
           )}
         />
 
-             <FormField
+        <FormField
           control={form.control}
           name="nickName"
           render={({ field }) => (
@@ -107,21 +124,8 @@ export default function SignUpTab({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <PasswordInput {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          <LoadingSwap isLoading={isSubmitting}>Sign Up</LoadingSwap>
+          <LoadingSwap isLoading={isSubmitting}>Update Profile</LoadingSwap>
         </Button>
       </form>
     </Form>

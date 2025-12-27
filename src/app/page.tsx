@@ -20,26 +20,31 @@ export default function Home() {
             <h1 className="text-2xl font-bold">
               Welcome {session?.user?.name}
             </h1>
-            <BetterAuthActionButton
-              size={"lg"}
-              variant={"destructive"}
-              successMessage="Signed out successfully"
-              action={async () => {
-                try {
-                  await authClient.signOut();
+            <div className="flex gap-4 justify-center">
+              <Button asChild size={"lg"}>
+                <Link href={"/profile"}>Profile</Link>
+              </Button>
+              <BetterAuthActionButton
+                size={"lg"}
+                variant={"destructive"}
+                successMessage="Signed out successfully"
+                action={async () => {
+                  try {
+                    await authClient.signOut();
 
-                  return { error: null };
-                } catch (e) {
-                  return {
-                    error: {
-                      message: "Failed to sign out",
-                    },
-                  };
-                }
-              }}
-            >
-              Sign Out
-            </BetterAuthActionButton>
+                    return { error: null };
+                  } catch (e) {
+                    return {
+                      error: {
+                        message: "Failed to sign out",
+                      },
+                    };
+                  }
+                }}
+              >
+                Sign Out
+              </BetterAuthActionButton>
+            </div>
           </>
         )}
       </div>
