@@ -27,6 +27,7 @@ import ProfileUpdateForm from "./components/profile-update-form";
 import SetPasswordButton from "./components/set-password-button";
 import ChangePasswordForm from "./components/change-password-form";
 import SessionManagement from "./components/session-management";
+import AccountLinking from "./components/account-linking";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -103,10 +104,39 @@ export default async function ProfilePage() {
             <SessionsTab currentSessionToken={session.session.id} />
           </LoadingSuspense>
         </TabsContent>{" "}
+
+           <TabsContent value={"accounts"}>
+          <LoadingSuspense>
+            <LinkedAccountsTab currentSessionToken={session.session.id} />
+          </LoadingSuspense>
+        </TabsContent>{" "}
       </Tabs>
     </div>
   );
 }
+
+
+
+async function LinkedAccountsTab({
+  currentSessionToken,
+}: {
+  currentSessionToken: string;
+}) {
+  const accounts = await auth.api.listUserAccounts({ headers: await headers() });
+  const nonCredentialAccounts = accounts.filter(a=> a.providerId !== "credential")
+
+  return (
+    <Card>
+      <CardContent>
+        <AccountLinking
+          currentAccounts={nonCredentialAccounts}
+   
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 
 async function SessionsTab({
   currentSessionToken,
