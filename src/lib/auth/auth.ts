@@ -7,6 +7,7 @@ import { sendMailVerificationEmail } from "../email/mail-verification-email";
 import { createAuthMiddleware } from "better-auth/api";
 import { sendWelcomeEmail } from "../email/welcome-email";
 import { sendDeleteAccountVerificationEmail } from "../email/delete-account-verificationt";
+import { twoFactor } from "better-auth/plugins";
 
 export const auth = betterAuth({
   user: {
@@ -25,12 +26,12 @@ export const auth = betterAuth({
         required: true,
       },
     },
-    deleteUser:{
-      enabled:true,
-      sendDeleteAccountVerification:async({user,url})=>{
-         await sendDeleteAccountVerificationEmail({ user, url });
-      }
-    }
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url }) => {
+        await sendDeleteAccountVerificationEmail({ user, url });
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -73,21 +74,22 @@ export const auth = betterAuth({
       maxAge: 60,
     },
   },
-  plugins: [nextCookies()],
+  plugins: [nextCookies(), twoFactor()],
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  hooks: {
-    after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith("/sign-up")) {
-        const user = ctx.context.newSession?.user ?? {
-          name: ctx.body.name,
-          email: ctx.body.email,
-        };
-        if (user !== null) {
-          await sendWelcomeEmail(user);
-        }
-      }
-    }),
-  },
+hooks: {
+  after: createAuthMiddleware(async (ctx) => {
+    if (!ctx.path?.startsWith("/sign-up")) return;
+
+    const user = ctx.context?.newSession?.user;
+    if (!user || !user.email) return;
+
+    await sendWelcomeEmail({
+      name: user.name ?? "",
+      email: user.email,
+    });
+  }),
+},
+
 });

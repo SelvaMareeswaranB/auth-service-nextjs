@@ -29,6 +29,7 @@ import ChangePasswordForm from "./components/change-password-form";
 import SessionManagement from "./components/session-management";
 import AccountLinking from "./components/account-linking";
 import AccountDeletion from "./components/account-deletion";
+import TwoFactorAuth from "./components/two-factor-auth";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -97,7 +98,10 @@ export default async function ProfilePage() {
         </TabsContent>{" "}
         <TabsContent value={"security"}>
           <LoadingSuspense>
-            <SecurityTab email={session.user.email} />
+            <SecurityTab
+              email={session.user.email}
+              isTwoFactorEnabled={session.user.twoFactorEnabled ?? false}
+            />
           </LoadingSuspense>
         </TabsContent>{" "}
         <TabsContent value={"sessions"}>
@@ -107,7 +111,7 @@ export default async function ProfilePage() {
         </TabsContent>{" "}
         <TabsContent value={"accounts"}>
           <LoadingSuspense>
-            <LinkedAccountsTab  />
+            <LinkedAccountsTab />
           </LoadingSuspense>
         </TabsContent>{" "}
         <TabsContent value={"danger"}>
@@ -162,7 +166,13 @@ async function SessionsTab({
   );
 }
 
-async function SecurityTab({ email }: { email: string }) {
+async function SecurityTab({
+  email,
+  isTwoFactorEnabled,
+}: {
+  email: string;
+  isTwoFactorEnabled: boolean;
+}) {
   const accounts = await auth.api.listUserAccounts({
     headers: await headers(),
   });
@@ -175,10 +185,10 @@ async function SecurityTab({ email }: { email: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Change Password</CardTitle>
+            <CardDescription>
+              Update your password for improved security
+            </CardDescription>{" "}
           </CardHeader>
-          <CardDescription>
-            Update your password for improved security
-          </CardDescription>
           <CardContent>
             <ChangePasswordForm />
           </CardContent>
@@ -187,12 +197,26 @@ async function SecurityTab({ email }: { email: string }) {
         <Card>
           <CardHeader>
             <CardTitle>Set Password</CardTitle>
+            <CardDescription>
+              We will send you a password reset email to set up a password.
+            </CardDescription>{" "}
           </CardHeader>
-          <CardDescription>
-            We will send you a password reset email to set up a password.
-          </CardDescription>
           <CardContent>
             <SetPasswordButton email={email} />
+          </CardContent>
+        </Card>
+      )}
+
+      {hasPasswordAccount && (
+        <Card>
+          <CardHeader className="flex justify-between items-center">
+            <CardTitle>Two-factor Authentication</CardTitle>
+            <Badge variant={isTwoFactorEnabled ? "default" : "secondary"}>
+              {isTwoFactorEnabled ? "Enabled" : "Disabled"}
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            <TwoFactorAuth isEnabled={isTwoFactorEnabled} />
           </CardContent>
         </Card>
       )}
