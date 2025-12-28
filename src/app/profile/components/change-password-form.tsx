@@ -10,12 +10,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingSwap } from "@/components/ui/loading-swap";
 import { authClient } from "@/lib/auth/auth-client";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -38,7 +36,6 @@ export default function ChangePasswordForm() {
   });
 
   const isSubmitting = form.formState.isSubmitting;
-  const router = useRouter();
 
   const handlePasswordChange = async (data: ChangePasswordForm) => {
   await authClient.changePassword(

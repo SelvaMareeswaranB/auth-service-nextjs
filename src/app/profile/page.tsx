@@ -26,6 +26,7 @@ import React, { Suspense } from "react";
 import ProfileUpdateForm from "./components/profile-update-form";
 import SetPasswordButton from "./components/set-password-button";
 import ChangePasswordForm from "./components/change-password-form";
+import SessionManagement from "./components/session-management";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -93,16 +94,37 @@ export default async function ProfilePage() {
           </Card>
         </TabsContent>{" "}
         <TabsContent value={"security"}>
-          <Card>
-            <CardContent>
-              <LoadingSuspense>
-                <SecurityTab email={session.user.email} />
-              </LoadingSuspense>
-            </CardContent>
-          </Card>
+          <LoadingSuspense>
+            <SecurityTab email={session.user.email} />
+          </LoadingSuspense>
+        </TabsContent>{" "}
+        <TabsContent value={"sessions"}>
+          <LoadingSuspense>
+            <SessionsTab currentSessionToken={session.session.id} />
+          </LoadingSuspense>
         </TabsContent>{" "}
       </Tabs>
     </div>
+  );
+}
+
+async function SessionsTab({
+  currentSessionToken,
+}: {
+  currentSessionToken: string;
+}) {
+  const sessions = await auth.api.listSessions({ headers: await headers() });
+  console.log(sessions);
+
+  return (
+    <Card>
+      <CardContent>
+        <SessionManagement
+          sessions={sessions}
+          currentSessionToken={currentSessionToken}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -124,7 +146,7 @@ async function SecurityTab({ email }: { email: string }) {
             Update your password for improved security
           </CardDescription>
           <CardContent>
-            <ChangePasswordForm email={email} />
+            <ChangePasswordForm />
           </CardContent>
         </Card>
       ) : (
