@@ -28,6 +28,7 @@ import SetPasswordButton from "./components/set-password-button";
 import ChangePasswordForm from "./components/change-password-form";
 import SessionManagement from "./components/session-management";
 import AccountLinking from "./components/account-linking";
+import AccountDeletion from "./components/account-deletion";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -104,39 +105,42 @@ export default async function ProfilePage() {
             <SessionsTab currentSessionToken={session.session.id} />
           </LoadingSuspense>
         </TabsContent>{" "}
-
-           <TabsContent value={"accounts"}>
+        <TabsContent value={"accounts"}>
           <LoadingSuspense>
-            <LinkedAccountsTab currentSessionToken={session.session.id} />
+            <LinkedAccountsTab  />
           </LoadingSuspense>
+        </TabsContent>{" "}
+        <TabsContent value={"danger"}>
+          <Card className="border border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AccountDeletion />
+            </CardContent>
+          </Card>
         </TabsContent>{" "}
       </Tabs>
     </div>
   );
 }
 
-
-
-async function LinkedAccountsTab({
-  currentSessionToken,
-}: {
-  currentSessionToken: string;
-}) {
-  const accounts = await auth.api.listUserAccounts({ headers: await headers() });
-  const nonCredentialAccounts = accounts.filter(a=> a.providerId !== "credential")
+async function LinkedAccountsTab() {
+  const accounts = await auth.api.listUserAccounts({
+    headers: await headers(),
+  });
+  const nonCredentialAccounts = accounts.filter(
+    (a) => a.providerId !== "credential"
+  );
 
   return (
     <Card>
       <CardContent>
-        <AccountLinking
-          currentAccounts={nonCredentialAccounts}
-   
-        />
+        <AccountLinking currentAccounts={nonCredentialAccounts} />
       </CardContent>
     </Card>
   );
 }
-
 
 async function SessionsTab({
   currentSessionToken,
