@@ -17,6 +17,7 @@ import { LoadingSwap } from "@/components/ui/loading-swap";
 import { authClient } from "@/lib/auth/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import PasskeyButton from "./passkey-button";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -57,6 +58,7 @@ export default function SignInTab({
     );
   };
   return (
+    <div className="space-y-4">
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(handleSignUp)}>
         <FormField
@@ -66,7 +68,7 @@ export default function SignInTab({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field}  autoComplete="email webauthn" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -91,7 +93,7 @@ export default function SignInTab({
                 </Button>
               </div>
               <FormControl>
-                <PasswordInput {...field} />
+                <PasswordInput {...field} autoComplete="current-password webauthn" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,5 +104,7 @@ export default function SignInTab({
         </Button>
       </form>
     </Form>
+    <PasskeyButton/>
+    </div>
   );
 }
