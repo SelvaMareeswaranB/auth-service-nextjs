@@ -5,10 +5,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+  
+} from "@/components/ui/card"
 import { TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { auth } from "@/lib/auth/auth"
-import { Tabs, TabsContent } from "@radix-ui/react-tabs";
+import { Tabs, TabsContent } from "@radix-ui/react-tabs"
 
 import {
   ArrowLeft,
