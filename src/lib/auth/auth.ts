@@ -14,7 +14,7 @@ import { admin, user, ac } from "./permisson";
 export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
-    "https://auth-service-nextjs.vercel.app",
+    "https://auth-service-nextjs.vercel.app"
   ],
   user: {
     changeEmail: {
