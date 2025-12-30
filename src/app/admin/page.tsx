@@ -1,10 +1,23 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { auth } from "@/lib/auth/auth";
-import { Link, ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import React from "react";
+import UserRow from "./components/user-row";
+import Link from "next/link";
 
 export default async function AdminPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -16,19 +29,19 @@ export default async function AdminPage() {
     body: { permission: { user: ["list"] } },
   });
 
-  if(!hasAccess.success) return redirect("/")
+  if (!hasAccess.success) return redirect("/");
 
   const users = await auth.api.listUsers({
-    headers:await headers(),
-    query:{limit:100,sortBy:"createAt",sortDirection:"desc"}
-  })
-
-  return  <div className="mx-auto container my-6 px-4">
+    headers: await headers(),
+    query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
+  });
+  console.log("Aksakjsasa", users);
+  return (
+    <div className="mx-auto container my-6 px-4">
       <Link href="/" className="inline-flex items-center mb-6">
         <ArrowLeft className="size-4 mr-2" />
         Back to Home
-      </Link>
-
+      </Link>{" "}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -51,9 +64,8 @@ export default async function AdminPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.users.map(user => (
-                    null
-                //   <UserRow key={user.id} user={user} selfId={session.user.id} />
+                {users.users.map((user) => (
+                  <UserRow key={user.id} user={user} selfId={session.user.id} />
                 ))}
               </TableBody>
             </Table>
@@ -61,4 +73,5 @@ export default async function AdminPage() {
         </CardContent>
       </Card>
     </div>
+  );
 }
