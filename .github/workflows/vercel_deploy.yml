@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - '01-simple-blog/**'  
+      - 'better-auth/**'  
 
 jobs:
   Deploy-Production:
