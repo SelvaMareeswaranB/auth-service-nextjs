@@ -9,9 +9,13 @@ import { sendWelcomeEmail } from "../email/welcome-email";
 import { sendDeleteAccountVerificationEmail } from "../email/delete-account-verificationt";
 import { twoFactor, admin as adminPlugin } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
-import { admin, user,ac } from "./permisson";
+import { admin, user, ac } from "./permisson";
 
 export const auth = betterAuth({
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://auth-service-nextjs.vercel.app",
+  ],
   user: {
     changeEmail: {
       enabled: true,
@@ -83,9 +87,10 @@ export const auth = betterAuth({
     adminPlugin({
       defaultRole: "user",
       ac,
-      roles:{
-      admin,user
-      }
+      roles: {
+        admin,
+        user,
+      },
     }),
   ],
   database: drizzleAdapter(db, {
