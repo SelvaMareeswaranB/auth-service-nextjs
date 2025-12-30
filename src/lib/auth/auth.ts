@@ -7,8 +7,8 @@ import { sendMailVerificationEmail } from "../email/mail-verification-email";
 import { createAuthMiddleware } from "better-auth/api";
 import { sendWelcomeEmail } from "../email/welcome-email";
 import { sendDeleteAccountVerificationEmail } from "../email/delete-account-verificationt";
-import { twoFactor } from "better-auth/plugins";
-import { passkey } from "@better-auth/passkey"
+import { twoFactor, admin } from "better-auth/plugins";
+import { passkey } from "@better-auth/passkey";
 
 export const auth = betterAuth({
   user: {
@@ -75,22 +75,28 @@ export const auth = betterAuth({
       maxAge: 60,
     },
   },
-  plugins: [nextCookies(), twoFactor(),passkey()],
+  plugins: [
+    nextCookies(),
+    twoFactor(),
+    passkey(),
+    admin({
+      defaultRole: "user",
+    }),
+  ],
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-hooks: {
-  after: createAuthMiddleware(async (ctx) => {
-    if (!ctx.path?.startsWith("/sign-up")) return;
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (!ctx.path?.startsWith("/sign-up")) return;
 
-    const user = ctx.context?.newSession?.user;
-    if (!user || !user.email) return;
+      const user = ctx.context?.newSession?.user;
+      if (!user || !user.email) return;
 
-    await sendWelcomeEmail({
-      name: user.name ?? "",
-      email: user.email,
-    });
-  }),
-},
-
+      await sendWelcomeEmail({
+        name: user.name ?? "",
+        email: user.email,
+      });
+    }),
+  },
 });
