@@ -4,6 +4,7 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 import { twoFactorClient, adminClient } from "better-auth/client/plugins";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { user, admin, ac } from "./permisson";
+import { organizationClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: "",
@@ -17,6 +18,7 @@ export const authClient = createAuthClient({
       },
     }),
     passkeyClient(),
+    organizationClient(),
     inferAdditionalFields<typeof auth>(),
     twoFactorClient({
       onTwoFactorRedirect: () => {

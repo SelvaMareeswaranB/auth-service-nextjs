@@ -40,7 +40,11 @@ export default function Home() {
                   <Link href={"/admin"}>Admin</Link>
                 </Button>
               )}
-
+    
+                <Button variant={"outline"} asChild size={"lg"}>
+                  <Link href={"/organizations"}>organization</Link>
+                </Button>
+            
               <BetterAuthActionButton
                 size={"lg"}
                 variant={"destructive"}

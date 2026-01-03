@@ -7,14 +7,22 @@ import { sendMailVerificationEmail } from "../email/mail-verification-email";
 import { createAuthMiddleware } from "better-auth/api";
 import { sendWelcomeEmail } from "../email/welcome-email";
 import { sendDeleteAccountVerificationEmail } from "../email/delete-account-verificationt";
-import { twoFactor, admin as adminPlugin } from "better-auth/plugins";
+import {
+  twoFactor,
+  admin as adminPlugin,
+  organization,
+} from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { admin, user, ac } from "./permisson";
+import { sendOrganizationInviteEmail } from "../email/organization-invite-email";
+import { member } from "@/drizzle/schema";
+import { desc, eq } from "drizzle-orm";
 
 export const auth = betterAuth({
+  appName: "Auth Service",
   trustedOrigins: [
     "http://localhost:3000",
-    "https://auth-service-nextjs.vercel.app"
+    "https://auth-service-nextjs.vercel.app",
   ],
   user: {
     changeEmail: {
@@ -84,6 +92,21 @@ export const auth = betterAuth({
     nextCookies(),
     twoFactor(),
     passkey(),
+    organization({
+      sendInvitationEmail: async ({
+        email,
+        organization,
+        inviter,
+        invitation,
+      }) => {
+        await sendOrganizationInviteEmail({
+          invitation,
+          inviter: inviter.user,
+          organization,
+          email,
+        });
+      },
+    }),
     adminPlugin({
       defaultRole: "user",
       ac,
@@ -108,5 +131,25 @@ export const auth = betterAuth({
         email: user.email,
       });
     }),
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (userSession) => {
+          const membership = await db.query.member.findFirst({
+            where: eq(member.userId, userSession.userId),
+            orderBy: desc(member.createdAt),
+            columns: { organizationId: true },
+          });
+
+          return {
+            data: {
+              ...userSession,
+              activeOrganizationId: membership?.organizationId,
+            },
+          };
+        },
+      },
+    },
   },
 });
